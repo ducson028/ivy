@@ -2,3 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
+.react-multiple-carousel__arrow--right {
+    right: 30px;
+    bottom: 55%;
+}
+
+.react-multiple-carousel__arrow--left {
+    left: 70px;
+    bottom: 55%;
+}
+
+.new {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+
+}
+.new::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-top: 17px solid #D73831;
+    border-left: 10px solid transparent;
+    bottom: -22px;
+    left: -19px;
+    z-index: -1;
+}
+
+.seller {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.seller::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-top: 25px solid #D73831;
+    border-left: 10px solid transparent;
+    bottom: -28px;
+    left: -15px;
+    z-index: -1;
+}
+.badget {
+    position: absolute;
+    font-size: 14px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.scrollable-content {
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    overflow: hidden;
+}
+
+.scrollable-content.max-h-none {
+    max-height: none;
+    padding-bottom: 20px; /* Tùy chỉnh thêm khoảng cách dưới nếu cần */
+}
+
+
+
+
+  
