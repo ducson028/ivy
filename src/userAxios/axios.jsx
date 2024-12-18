@@ -27,16 +27,3 @@ export const fetchProductDetails = async (type, id) => {
       throw error;
     }
   };
-  
-  import axios from 'axios';
-
-  // Gọi API để lấy danh sách sản phẩm
-  const fetchProducts = async () => {
-    try {
-      const response = await axios.get('/api/products');
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  };
-  
