@@ -9,16 +9,9 @@ import { fetchProductDetails } from "../userAxios/axios";
 
 const Product = () => {
     const { id } = useParams();   
-    useEffect(() => {
-        console.log("Current product ID:", id); // Debug giá trị ID
-    }, [id]);
-    
-    
     const navigate = useNavigate();
 
-    const [product, setProduct] = useState(null); // Khởi tạo product là null
-    console.log('Product', product);
-    
+    const [product, setProduct] = useState(null); // Khởi tạo product là null   
     const [selectedSize, setSelectedSize] = useState("");
     const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
@@ -28,7 +21,7 @@ const Product = () => {
     const [activeTabs, setActiveTabs] = useState('gioithieu');
     const [isContentVisible, setIsContentVisible] = useState(false);
     const [error, setError] = useState(""); 
-    const { cartItems, addToCart } = useCart();
+    const { addToCart } = useCart();
 
     const tabs = {
         INTRODUCTION: 'gioithieu',
@@ -108,31 +101,23 @@ const handleAddToCart = () => {
         return;
     }
 
-    const existingItem = cartItems.find(
-        (item) => item.id === product.id && item.sizeWorn === selectedSize
-    );
+    // Xử lý thêm vào giỏ hàng
+    addToCart({
+        id: product.id,
+        name: product.name,
+        sizeWorn: selectedSize,
+        color: product.color,
+        imageUrl: selectedImage,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        quantity, // Số lượng hiện tại
+    });
 
-    if (existingItem) {
-        addToCart({ 
-            ...existingItem,
-             quantity: existingItem.quantity + quantity 
-        });
-    } else {
-        addToCart({
-            id: product.id,
-            name: product.name,
-            sizeWorn: selectedSize,
-            color: product.color,
-            imageUrl: selectedImage,
-            price: product.price,
-            originalPrice: product.originalPrice,
-            quantity,
-        });
-    }
-    
-    setQuantity(1)
+    // Đặt lại số lượng
+    setQuantity(1);
     alert("Sản phẩm đã được thêm vào giỏ hàng!");
 };
+
 
 const handleAddToCartAndGoToCart = () => {
     if (!selectedSize) {

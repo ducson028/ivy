@@ -1,10 +1,10 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Login from '../components/Login';
-import Register from '../components/register';
+import Register from '../components/Register';
 import Home from '../components/Home';
 import Product from '../components/Product';
-import ShoppingCart from '../components/ShoppingCart';
+import ShoppingCart from '../components/carts/ShoppingCart';
 
 
 

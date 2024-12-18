@@ -1,12 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch, FaUser, FaShoppingCart } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom'
 import { useCart } from "../context/CartContext";
+import Cart from "../components/carts/Cart";
 
 const Header = () => {
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState(null);
   const { cartItems } = useCart();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const toggleCart = () => setIsCartOpen(!isCartOpen);
+
+  useEffect(() => {
+    // Kiểm tra xem người dùng có đăng nhập không (kiểm tra localStorage)
+    const user = localStorage.getItem('user');
+    if (user) {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, []);
+
+  
+  const handleLogout = () => {
+    // Xóa thông tin người dùng khỏi localStorage
+    localStorage.removeItem('user');
+
+    setIsLoggedIn(false);
+    setIsOpen(false); // Đóng menu sau khi logout
+    navigate('/login'); // Chuyển hướng về trang đăng nhập
+    window.confirm('Bạn có chắn chắn đăng xuất không ?')
+  };
+ 
+  const handleLoginRedirect = () => {
+    // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
+    navigate('/login');
+  };
+
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
+
   const handleMenuClick = (menu) => {
     // Nếu menu đã mở, đóng lại. Nếu không, mở menu tương ứng
     setActiveMenu(activeMenu === menu ? null : menu);
@@ -96,21 +133,56 @@ const Header = () => {
           placeholder="TÌM KIẾM SẢN PHẨM"
           className="border rounded-lg w-[250px] p-2 text-black focus:outline-none focus:ring-2 focus:ring-[#ddd]"
         />
-        <button className="px-2 ">
+        <button className="px-2 "
+        >
           <FaSearch />
         </button>
-        <button className="px-2">
+        <div className="relative">
+        <button className="px-2"
+        onClick={toggleMenu}
+        >
           <FaUser />
         </button>
-        <button className="px-2 ">
-          <FaShoppingCart />
-
+        {isOpen && (
+        <ul className="absolute top-10 left-0 w-40 bg-white shadow-md rounded-lg z-10">
+          {isLoggedIn ? (
+            <>
+              <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                Tài khoản của tôi
+              </li>
+              <li
+                onClick={handleLogout}
+                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              >
+                Logout
+              </li>
+            </>
+          ) : (
+            <li
+              onClick={handleLoginRedirect}
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+            >
+              Đăng nhập
+            </li>
+          )}
+        </ul>
+      )}
+          </div>
+        <button 
+        onClick={toggleCart}
+        className="px-2">
+          <FaShoppingCart />   
           <span className="absolute top-[10px] right-[67px] bg-gray-800 text-white text-xs rounded-full px-1">
-            {totalQuantity}
+            {totalQuantity}           
           </span>
-
         </button>
-
+        {isCartOpen && (
+        <div
+          onClick={toggleCart}
+          className="fixed inset-0 bg-black bg-opacity-50 z-10"
+        ></div>
+      )}
+      <Cart isOpen={isCartOpen} toggleCart={toggleCart} />
       </div>
     </div>
   );
