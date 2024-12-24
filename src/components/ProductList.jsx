@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
+import PropTypes from "prop-types";
 import { CiHeart, CiShoppingBasket } from "react-icons/ci";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import { Link } from 'react-router-dom'; // Importing Link from react-router-dom
 import logo from '../assets/bg_news.png';
 import badget from '../assets/badget.png'
-import { fetchProducts } from '../userAxios/axios';
-import Product from './Product';
+import { fetchProductsNew } from '../userAxios/axios';
+
 
 const responsive = {
     superLargeDesktop: {
@@ -78,7 +79,7 @@ const ProductCard = ({ imageUrl, hoverImageUrl, name, price, originalPrice, isNe
                 
                 <Link to={`/product/${id}`}
                  className="text-gray-700 hover:underline">
-                    <p>{name}</p>
+                    <div>{name}</div>
                 </Link>
 
                 <div className="flex items-center justify-between">
@@ -101,13 +102,12 @@ const ProductList = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeButton, setActiveButton] = useState('ivyModa');
-    console.log('active', activeButton);
     
     useEffect(() => {
         const loadProducts = async () => {
             setLoading(true);
             try {
-                const data = await fetchProducts(activeButton);
+                const data = await fetchProductsNew(activeButton);
                 if (data) {
                     setProducts(data); // Đảm bảo data trả về đúng danh sách sản phẩm
                 }
@@ -121,7 +121,7 @@ const ProductList = () => {
         loadProducts();
     }, [activeButton]);
     
-
+    <p>{loading}</p>
     return (
         <div>
             <p className="flex text-[40px] pt-4 font-bold font-mono justify-center">NEW ARRIVAL</p>
@@ -142,7 +142,8 @@ const ProductList = () => {
 
             <Carousel responsive={responsive} draggable={true} className="px-10 mr-10">
                 {products.map((product) => (
-                    <Link key={product.id} to={`/product/${product.id}`}>
+                    <div key={product.id} >
+                    <Link to={`/product/${product.id}`}>
                     <ProductCard
                         key={product.id}
                         imageUrl={product.imageUrl[0]}
@@ -155,6 +156,7 @@ const ProductList = () => {
                         id={product.id} 
                     />
                     </Link>
+                    </div>
                 ))}
             </Carousel>
 
@@ -163,9 +165,19 @@ const ProductList = () => {
                     Xem tất cả
                 </button>
             </div>
-            <Product activeButton={activeButton} />
+          
         </div>
     );
+};
+ProductCard.propTypes = {
+    imageUrl: PropTypes.string.isRequired,
+    hoverImageUrl: PropTypes.string,
+    name: PropTypes.string.isRequired,
+    price: PropTypes.string.isRequired,
+    originalPrice: PropTypes.string,
+    isNew: PropTypes.bool,
+    isBadget: PropTypes.bool,
+    id: PropTypes.string.isRequired,
 };
 
 export default ProductList;

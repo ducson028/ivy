@@ -8,26 +8,30 @@ import { PiWarningCircleLight } from "react-icons/pi";
 import { MdDelete } from "react-icons/md";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { useCart } from "../../context/CartContext";
+import useCartLogic from "./useCartLogic";
 
 const ShoppingCart = () => {
   const navigate = useNavigate();
   const { cartItems, removeFromCart, updateQuantity } = useCart();
   const [quantities, setQuantities] = useState({});
+  const { handleQuantityChange, totalPrice, totalItems, totalOriginalPrice } = useCartLogic(
+        cartItems,
+        updateQuantity,
+        removeFromCart
+    );
 
-  useEffect(() => {
-    // Khởi tạo số lượng từ cartItems
-    const initialQuantities = cartItems.reduce((acc, item) => {
-      acc[item.id] = item.quantity || 1;
-      return acc;
-    }, {});
-    setQuantities(initialQuantities);
+    useEffect(() => {
+      if (cartItems) {
+          const initialQuantities = cartItems.reduce((acc, item) => {
+              acc[`${item.id}-${item.sizeWorn}`] = item.quantity || 1;
+              return acc;
+          }, {});
+          setQuantities(initialQuantities);
+      }
   }, [cartItems]);
+  
 
-  const handleQuantityChange = (id, sizeWorn, newQuantity) => {
-    if (newQuantity <= 0) return;
-    setQuantities((prev) => ({ ...prev, [id]: newQuantity }));
-    updateQuantity(id, sizeWorn, newQuantity);
-  };
+
 
   const handleRemoveFromCart = (id) => {
     removeFromCart(id);
@@ -37,12 +41,6 @@ const ShoppingCart = () => {
       hideProgressBar: true,
     });
   };
-
-  const totalOriginalPrice = cartItems.reduce((sum, item) => sum + (parseFloat(item.originalPrice.replace(/\./g, "")))
-                             * (quantities[item.id] || 1), 0).toLocaleString("vi-VN");
-    const totalPrice = cartItems.reduce((sum, item) => sum + ((parseFloat(item.originalPrice.replace(/\./g, "")))
-                       - (parseFloat(item.price.replace(/\./g, "")))) * (quantities[item.id] || 1), 0).toLocaleString("vi-VN");
-    const totalItems = cartItems.reduce((sum, item) => sum + (quantities[item.id] || 1), 0);
 
   return (
     <section className="cart pt-20">
@@ -89,31 +87,31 @@ const ShoppingCart = () => {
                     <td className="border-b text-red-500">
                       -{" "}
                       {(
-                        parseFloat(item.price.replace(/\./g, "")) *
-                        (quantities[item.id] || 1)
-                      ).toLocaleString("vi-VN")}
+                        (parseFloat(item.originalPrice.replace(/\./g, "")) - parseFloat(item.price.replace(/\./g, ""))) *
+                        (quantities[`${item.id}-${item.sizeWorn}`] || item.quantity)
+                        ).toLocaleString("vi-VN")}
                       đ
                     </td>
                     <td className="border-b">
                       <div className="flex items-center">
-                        <button onClick={() => handleQuantityChange(item.id, item.sizeWorn, (quantities[item.id] || 1) - 1)} 
-                        className="px-4 py-2 bg-gray-200 rounded-tl-xl">
-                          -
-                        </button>
-                        <input type="text" value={quantities[item.id] || 1} readOnly 
-                        className="w-10 h-10 text-center border-t border-b" 
-                        />
+                      <button onClick={() => handleQuantityChange(item.id, item.sizeWorn, (quantities[`${item.id}-${item.sizeWorn}`] || item.quantity) - 1)} 
+                      className="px-4 py-2 bg-gray-200 rounded-tl-xl">
+                      -
+                      </button>
+                      <input type="text" value={quantities[`${item.id}-${item.sizeWorn}`] || item.quantity} 
+                      readOnly 
+                      className="w-10 h-10 text-center border-t border-b" />
+                      <button onClick={() => handleQuantityChange(item.id, item.sizeWorn, (quantities[`${item.id}-${item.sizeWorn}`] || item.quantity) + 1)} 
+                      className="px-4 py-2 bg-gray-200 rounded-br-xl">
+                      +
+                      </button>
 
-                        <button onClick={() => handleQuantityChange(item.id, item.sizeWorn, (quantities[item.id] || 1) + 1)} 
-                        className="px-4 py-2 bg-gray-200 rounded-br-xl">
-                          +
-                        </button>
                       </div>
                     </td>
                     <td className="border-b font-bold">
-                      {(
-                        (parseFloat(item.originalPrice.replace(/\./g, "")) - parseFloat(item.price.replace(/\./g, ""))) *
-                        (quantities[item.id] || 1)
+                    {(
+                      parseFloat(item.price.replace(/\./g, "")) *
+                      (quantities[`${item.id}-${item.sizeWorn}`] || item.quantity)
                       ).toLocaleString("vi-VN")}
                       đ
                     </td>
@@ -166,7 +164,16 @@ const ShoppingCart = () => {
                     </p>
                     <div className="flex-grow h-[1px] mt-4 bg-gray-300 mx-12"></div>
                     <div className="mt-5 flex justify-center">
-                        <button className="w-[90%] bg-black text-white py-2 border border-black rounded-tl-2xl rounded-br-2xl hover:bg-white hover:text-black">
+                        <button 
+                        className="w-[90%] bg-black text-white py-2 border border-black rounded-tl-2xl rounded-br-2xl hover:bg-white hover:text-black"
+                        onClick={() => navigate('/dathang', {
+                          state: {
+                            cartItems,
+                            totalOriginalPrice,
+                            totalPrice
+                          }
+                        })}
+                        >
                             Đặt hàng
                         </button>
                     </div>

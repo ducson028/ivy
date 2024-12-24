@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from "prop-types";
 import { useCart } from "../../context/CartContext";
 import { useNavigate } from "react-router-dom";
 import useCartLogic from "./useCartLogic";
@@ -16,7 +16,6 @@ const Cart = ({ isOpen, toggleCart }) => {
     return (
         <>
             {isOpen && <div onClick={toggleCart} className="fixed inset-0 bg-black bg-opacity-50 z-10"></div>}
-
             <div className={`fixed right-0 top-0 w-80 bg-white h-full shadow-lg transform ${isOpen ? "translate-x-0" : "translate-x-full"} transition-transform duration-300 z-20`}>
                 <div className="flex justify-between items-center p-4 border-b">
                     <h2 className="text-lg font-bold">Giỏ hàng</h2>
@@ -53,4 +52,8 @@ const Cart = ({ isOpen, toggleCart }) => {
     );
 };
 
+Cart.propTypes = {
+    isOpen: PropTypes.bool,
+    toggleCart: PropTypes.func,
+}
 export default Cart;

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { FaSearch, FaUser, FaShoppingCart } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom'
 import { useCart } from "../context/CartContext";
 import Cart from "../components/carts/Cart";
+import { useAuth } from "../context/AuthContext";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const { logout } = useAuth();
 
   const toggleCart = () => setIsCartOpen(!isCartOpen);
 
@@ -27,12 +29,13 @@ const Header = () => {
   
   const handleLogout = () => {
     // Xóa thông tin người dùng khỏi localStorage
-    localStorage.removeItem('user');
-
-    setIsLoggedIn(false);
-    setIsOpen(false); // Đóng menu sau khi logout
-    navigate('/login'); // Chuyển hướng về trang đăng nhập
-    window.confirm('Bạn có chắn chắn đăng xuất không ?')
+    const confirmLogout=  window.confirm('Bạn có chắn chắn đăng xuất không ?')
+    if(confirmLogout) {
+      logout();
+      setIsLoggedIn(false);
+      setIsOpen(false); // Đóng menu sau khi logout
+      navigate('/');
+    }
   };
  
   const handleLoginRedirect = () => {
@@ -88,7 +91,7 @@ const Header = () => {
   
 
   return (
-    <div className="p-2 pl-[100px] pr-[75px] flex justify-between items-center fixed top-0 left-0 w-full z-[9999] bg-white border-b-[1px]">
+    <div className="p-2 pl-[75px] pr-[75px] flex justify-between items-center fixed top-0 left-0 w-full z-[9999] bg-white border-b-[1px]">
       <div className="flex items-center gap-[20px]">
       {menuItems.map((item) => (
   <div key={item.title} className=" relative font-bold">
@@ -147,7 +150,9 @@ const Header = () => {
         <ul className="absolute top-10 left-0 w-40 bg-white shadow-md rounded-lg z-10">
           {isLoggedIn ? (
             <>
-              <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+              <li 
+              onClick={()=> navigate('/userprofile')}
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
                 Tài khoản của tôi
               </li>
               <li

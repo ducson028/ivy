@@ -1,12 +1,20 @@
-import  { useState } from 'react';
+import  { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const { isAuth, login } = useAuth();
+
+  useEffect(() => {
+    if (isAuth) {
+      navigate('/'); 
+    }
+  }, [isAuth, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -29,6 +37,7 @@ const Login = () => {
 
         // Kiểm tra mật khẩu
         if (user.password === password) {
+          login(user);
           setMessage('Đăng nhập thành công!');
           navigate('/')
           console.log('Thông tin người dùng:', user);

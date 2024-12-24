@@ -1,8 +1,8 @@
 // CartItem.jsx
-import React from "react";
-import { MdDelete } from "react-icons/md";
 
-const CartItem = ({ item, quantity, onQuantityChange, onRemove }) => {
+import PropTypes from "prop-types";
+
+const CartItem = ({ item, quantity, onQuantityChange }) => {
     return (
         <div className="flex items-center border-b pb-4 mb-4">
             <img src={item.imageUrl} alt={item.name} className="w-20 h-28 rounded" />
@@ -36,6 +36,19 @@ const CartItem = ({ item, quantity, onQuantityChange, onRemove }) => {
             </div>
         </div>
     );
+};
+
+CartItem.propTypes = {
+    item: PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+        imageUrl: PropTypes.string.isRequired,
+        color: PropTypes.string.isRequired,
+        sizeWorn: PropTypes.string.isRequired,
+        originalPrice: PropTypes.string.isRequired,
+    }).isRequired,
+    quantity: PropTypes.number.isRequired,
+    onQuantityChange: PropTypes.func.isRequired,
 };
 
 export default CartItem;

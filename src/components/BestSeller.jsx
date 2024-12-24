@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
+import PropTypes from "prop-types";
 import { CiHeart, CiShoppingBasket } from "react-icons/ci";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import logo1 from '../assets/bg-seller.png';
-import { fetchProducts } from '../userAxios/axios'; 
+import { Link } from 'react-router-dom'; // Importing Link from react-router-dom
+import logo from '../assets/bg-seller.png';
+import badget from '../assets/badget.png'
+import { fetchProductsBest } from '../userAxios/axios';
+
 
 const responsive = {
     superLargeDesktop: {
@@ -24,23 +28,34 @@ const responsive = {
     },
 };
 
-const ProductCard = ({ imageUrl, hoverImageUrl, name, price, originalPrice, isNew }) => {
+const ProductCard = ({ imageUrl, hoverImageUrl, name, price, originalPrice, isNew, isBadget, id }) => {
     const [isHovered, setIsHovered] = useState(false);
 
     return (
         <div className="w-[200px] md:w-[250px] p-2">
             <div className="relative">
-                {isNew && (
-                    <span className="absolute top-0 left-[-10px]">
+                {isBadget && (
+                    <span className="absolute top-2 left-[180px]">
                         <div className="relative inline-block">
-                            <img src={logo1} alt="logo" />
+                            <img src={badget} alt="badget" />
+                            <span className="badget">
+                                -30%
+                            </span>
+                        </div>
+                    </span>
+                )}
+                {isNew && (
+                    <span className="absolute top-0 left-[-10px] whitespace-nowrap">
+                        <div className="relative inline-block">
+                            <img src={logo} alt="logo" />
                             <span className="seller">
                                 Best Seller
                             </span>
                         </div>
                     </span>
+                
                 )}
-
+                
                 <img
                     src={isHovered ? hoverImageUrl : imageUrl}
                     alt={name}
@@ -61,12 +76,17 @@ const ProductCard = ({ imageUrl, hoverImageUrl, name, price, originalPrice, isNe
                     </div>
                 </div>
 
-                <p className="text-gray-700">{name}</p>
+                
+                <Link to={`/product/${id}`}
+                 className="text-gray-700 hover:underline">
+                    <div>{name}</div>
+                </Link>
+
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                        <p className="font-bold text-black text-[20px]">{price}đ</p>
-                        {originalPrice && (
-                            <p className="text-gray-400 text-[18px] line-through">{originalPrice}đ</p>
+                        <p className="font-bold text-black text-[20px]">{(price)}đ</p>
+                        {(originalPrice) && (
+                            <p className="text-gray-400 text-[18px] line-through">{(originalPrice)}đ</p>
                         )}
                     </div>
                     <div className="flex items-center text-[30px] hover:text-black bg-black text-white hover:bg-white rounded-tl-[8px] rounded-br-[8px]">
@@ -82,43 +102,38 @@ const ProductList = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeButton, setActiveButton] = useState('ivyModa');
-
+    
     useEffect(() => {
-            const loadProducts = async () => {
-                setLoading(true);
-                try {
-                    const data = await fetchProducts(activeButton);
-                    setProducts(data);
-                } catch (error) {
-                    console.error('Error fetching products:', error);
-                } finally {
-                    setLoading(false);
+        const loadProducts = async () => {
+            setLoading(true);
+            try {
+                const data = await fetchProductsBest(activeButton);
+                if (data) {
+                    setProducts(data); // Đảm bảo data trả về đúng danh sách sản phẩm
                 }
-            };
-        
-            loadProducts();
-        }, [activeButton]);
-
-    // if (loading) {
-    //     return <p className="text-center text-[20px]">Loading...</p>;
-    // }
-
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+    
+        loadProducts();
+    }, [activeButton]);
+    
+    <p>{loading}</p>
     return (
         <div>
             <p className="flex text-[40px] pt-4 font-bold font-mono justify-center">BEST SELLER</p>
             <div className="flex justify-center">
                 <button
-                    className={`text-[20px] m-2 ${
-                        activeButton === 'ivyModa' ? ' border-black border-b-2' : 'border-b-0 text-gray-500'
-                    }`}
+                    className={`text-[20px] m-2 ${activeButton === 'ivyModa' ? 'border-black border-b-2' : 'border-b-0 text-gray-500'}`}
                     onClick={() => setActiveButton('ivyModa')}
                 >
                     IVY moda
                 </button>
                 <button
-                    className={`text-[20px] m-2 ${
-                        activeButton === 'ivyMen' ? 'border-black border-b-2' : 'border-b-0 text-gray-500'
-                    }`}
+                    className={`text-[20px] m-2 ${activeButton === 'ivyMen' ? 'border-black border-b-2' : 'border-b-0 text-gray-500'}`}
                     onClick={() => setActiveButton('ivyMen')}
                 >
                     IVY men
@@ -126,16 +141,22 @@ const ProductList = () => {
             </div>
 
             <Carousel responsive={responsive} draggable={true} className="px-10 mr-10">
-                {products.map((product, index) => (
+                {products.map((product) => (
+                    <div  key={product.id}>
+                    <Link to={`/product/${product.id}`}>
                     <ProductCard
-                        key={index}
+                        key={product.id}
                         imageUrl={product.imageUrl[0]}
                         hoverImageUrl={product.hoverImageUrl}
                         name={product.name}
                         price={product.price}
                         originalPrice={product.originalPrice}
                         isNew={product.isNew}
+                        isBadget={product.isBadget}
+                        id={product.id} 
                     />
+                    </Link>
+                    </div>
                 ))}
             </Carousel>
 
@@ -144,8 +165,24 @@ const ProductList = () => {
                     Xem tất cả
                 </button>
             </div>
+          
         </div>
     );
 };
+ProductCard.propTypes = {
+    imageUrl: PropTypes.string.isRequired,
+    hoverImageUrl: PropTypes.string, 
+    name: PropTypes.string.isRequired,
+    price: PropTypes.string.isRequired,
+    originalPrice: PropTypes.string,
+    isNew: PropTypes.bool,
+    isBadget: PropTypes.bool,
+    id: PropTypes.string.isRequired,
+};
 
 export default ProductList;
+
+
+
+
+

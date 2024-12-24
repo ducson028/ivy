@@ -1,4 +1,3 @@
-// useCartLogic.js
 import { useState, useEffect } from "react";
 
 const useCartLogic = (cartItems, updateQuantity, removeFromCart) => {
@@ -7,7 +6,7 @@ const useCartLogic = (cartItems, updateQuantity, removeFromCart) => {
     useEffect(() => {
         if (cartItems) {
             const initialQuantities = cartItems.reduce((acc, item) => {
-                acc[item.id] = item.quantity || 1;
+                acc[`${item.id}-${item.sizeWorn}`] = item.quantity || 1;
                 return acc;
             }, {});
             setQuantities(initialQuantities);
@@ -15,27 +14,42 @@ const useCartLogic = (cartItems, updateQuantity, removeFromCart) => {
     }, [cartItems]);
 
     const handleQuantityChange = (id, sizeWorn, newQuantity) => {
+        const key = `${id}-${sizeWorn}`;
         if (newQuantity <= 0) {
             removeFromCart(id, sizeWorn);
             return;
         }
         setQuantities((prevQuantities) => ({
             ...prevQuantities,
-            [id]: newQuantity,
+            [key]: newQuantity,
         }));
         updateQuantity(id, sizeWorn, newQuantity);
     };
 
-    const totalPrice = cartItems.reduce(
-        (sum, item) =>
+    const totalPrice = cartItems.reduce((sum, item) => {
+        const key = `${item.id}-${item.sizeWorn}`;
+        const quantity = quantities[key] || item.quantity;
+        return (
             sum +
-            ((parseFloat(item.originalPrice.replace(/\./g, "")) -
-                parseFloat(item.price.replace(/\./g, ""))) *
-                (quantities[item.id] || 1)),
-        0
-    );
+            parseFloat(item.price.replace(/\./g, "")) * quantity
+        );
+    }, 0).toLocaleString("vi-VN");
 
-    return { quantities, handleQuantityChange, totalPrice };
+    const totalOriginalPrice = cartItems.reduce((sum, item) => {
+        const key = `${item.id}-${item.sizeWorn}`;
+        const quantity = quantities[key] || item.quantity;
+        return (
+            sum +
+            parseFloat(item.originalPrice.replace(/\./g, "")) * quantity
+        );
+    }, 0).toLocaleString("vi-VN");
+
+    const totalItems = cartItems.reduce((sum, item) => {
+        const key = `${item.id}-${item.sizeWorn}`;
+        return sum + (quantities[key] || item.quantity);
+    }, 0);
+
+    return { quantities, handleQuantityChange, totalPrice, totalOriginalPrice, totalItems };
 };
 
 export default useCartLogic;

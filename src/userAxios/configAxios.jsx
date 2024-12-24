@@ -8,6 +8,13 @@ export const axiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
 });
+export const axiosBest = axios.create({
+  baseURL: 'https://6768da3acbf3d7cefd38d392.mockapi.io/seller',
+  timeout: 5000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 // Interceptor - Xử lý request trước khi gửi đi
 axiosInstance.interceptors.request.use(

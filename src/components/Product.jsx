@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { CiHeart } from "react-icons/ci";
 import { GrLinkUp, GrLinkDown } from "react-icons/gr";
 import { useCart } from "../context/CartContext";
-import { fetchProductDetails } from "../userAxios/axios";
+import { fetchProductDetailsNew } from "../userAxios/axios";
 
 
 
@@ -39,8 +39,7 @@ const Product = () => {
             }
 
             const type = id.includes('ivyModa') ? 'ivyModa' : 'ivyMen';
-            const data = await fetchProductDetails(type, id);
-            console.log('data', data)
+            const data = await fetchProductDetailsNew(type, id);
             if (data) {
                 setProduct(data);
                 if (data.imageUrl && data.imageUrl.length > 0) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { GrLinkNext, GrLinkPrevious } from "react-icons/gr";
 import bst1 from '../assets/bst1.webp';
 import bst2 from '../assets/bst2.webp';

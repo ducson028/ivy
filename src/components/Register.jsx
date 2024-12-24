@@ -1,12 +1,14 @@
 import {useState, useEffect} from 'react';
-import axios from 'axios';
 import { register } from '../userAxios/auth';
+import { getDistricts, getWards, getProvinces} from '../userAxios/auth';
+import {useNavigate} from 'react-router-dom'
 
 const Register = () => {
-  
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    firstname: '',
+    lastname: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -16,46 +18,68 @@ const Register = () => {
     address: '',
     province: '',
     district: '',
-     ward: ''   
+    ward: ''   
   })
   const [message, setMessage] = useState('');
-
+  const [error, setError] = useState("");
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
   const [selectedProvince, setSelectedProvince] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const validateForm = () => {
+    const { firstname, lastname, email, phone, password, gender, province, district, ward, address } = formData;
+    if (!firstname || !lastname || !email || !phone || !password || !gender || !province || !district || !ward || !address) {
+      setError("Vui lòng nhập đầy đủ thông tin.");
+      return false;
+    }else if(formData.password !== formData.confirmPassword) {
+      setError("Mật khẩu và xác nhận mật khẩu không khớp.");
+      return false;
+    }
+    
+    return true;
+  };
+  
+  const handleClearError = () => {
+    setError(""); // Xóa lỗi
+  };
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes('.')) {
-        const [key, subKey] = name.split('.');
-        setFormData({
-            ...formData,
-            [key]: { ...formData[key], [subKey]: value }
-        });
-    } else {
-        setFormData({ ...formData, [name]: value });
-    }
-};
+    handleClearError();
+    setFormData({ ...formData, [name]: value });
+  };
+  
 
 const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  if (validateForm()) {
+    setIsSubmitting(true);
     try {
-        const response = await register(formData);
+      const response = await register(formData);
+      if (response.status === 201 || response.status === 200) {
         setMessage('Đăng ký thành công!');
-        console.log(response.data);
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
+      } else {
+        setMessage('Đăng ký không thành công, vui lòng thử lại.');
+      }
     } catch (error) {
-        setMessage(error.response.data.message || 'Đã xảy ra lỗi');
+      setMessage(error.response?.data?.message || 'Đã xảy ra lỗi');
+    } finally {
+      setIsSubmitting(false);
     }
+  }
 };
 
 // Lấy danh sách tỉnh/thành phố khi load trang
 useEffect(() => {
   const fetchProvinces = async () => {
     try {
-      const { data } = await axios.get('https://provinces.open-api.vn/api/p/');
+      const data = await getProvinces();
       setProvinces(data);
     } catch (error) {
       console.error('Lỗi khi lấy danh sách tỉnh/thành phố:', error);
@@ -66,46 +90,59 @@ useEffect(() => {
 
 // Lấy danh sách quận/huyện khi chọn tỉnh
 useEffect(() => {
-  if (selectedProvince) {
-    const fetchDistricts = async () => {
+  const fetchDistricts = async () => {
+    if (selectedProvince) {
       try {
-        const { data } = await axios.get(`https://provinces.open-api.vn/api/p/${selectedProvince}?depth=2`);
-        setDistricts(data.districts || []);
+        const data = await getDistricts(selectedProvince);
+        setDistricts(data);
       } catch (error) {
-        console.error('Lỗi khi lấy danh sách quận/huyện:', error);
+        console.error(error);
       }
-    };
-    fetchDistricts();
-  } else {
-    setDistricts([]);
-    setWards([]);
-  }
+    } else {
+      setDistricts([]);
+      setWards([]);
+    }
+  };
+  fetchDistricts();
 }, [selectedProvince]);
 
 // Lấy danh sách phường/xã khi chọn quận
 useEffect(() => {
-  if (selectedDistrict) {
-    const fetchWards = async () => {
+  const fetchWards = async () => {
+    if (selectedDistrict) {
       try {
-        const { data } = await axios.get(`https://provinces.open-api.vn/api/d/${selectedDistrict}?depth=2`);
-        setWards(data.wards || []);
+        const data = await getWards(selectedDistrict);
+        setWards(data);
       } catch (error) {
-        console.error('Lỗi khi lấy danh sách phường/xã:', error);
+        console.error(error);
       }
-    };
-    fetchWards();
-  } else {
-    setWards([]);
-  }
+    } else {
+      setWards([]);
+    }
+  };
+  fetchWards();
 }, [selectedDistrict]);
 
 const handleChangeProvince = (e) => {
-  setSelectedProvince(e.target.value);
+  const provinceCode = e.target.value;
+  const provinceName = e.target.options[e.target.selectedIndex].text;
+  setSelectedProvince(provinceCode);
+  setFormData({ ...formData, province: provinceName, district: '', ward: '' });
 };
 
 const handleChangeDistrict = (e) => {
-  setSelectedDistrict(e.target.value);
+  const districtCode = e.target.value;
+  const districtName = e.target.options[e.target.selectedIndex].text;
+  setSelectedDistrict(districtCode);
+  setFormData({ ...formData, district: districtName, ward: '' });
 };
+
+const handleChangeWard = (e) => {
+  const wardName = e.target.options[e.target.selectedIndex].text;
+  setFormData({ ...formData, ward: wardName });
+};
+
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 md:p-16 shadow-lg w-full max-w-6xl">
@@ -114,6 +151,17 @@ const handleChangeDistrict = (e) => {
           {/* Thông tin khách hàng */}
           
           <div>
+          {error && (
+                <div className="flex justify-between mt-4 items-center bg-red-100 text-red-600 p-2 mb-4 rounded-md">
+                  <p>{error}</p>
+                  <button
+                    className="font-bold text-lg text-red-600 hover:text-red-800"
+                    onClick={handleClearError}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
             <h3 className="text-xl font-semibold mb-4">Thông tin khách hàng</h3>
             <div className="space-y-4">
               <div className="flex space-x-4">
@@ -159,8 +207,9 @@ const handleChangeDistrict = (e) => {
                 name="gender"
                 className="w-1/2 p-3 border border-gray-300 rounded"
                 onChange={handleChange}>
-                  <option>Nữ</option>
-                  <option>Nam</option>
+                  <option value=''>--Chọn--</option>
+                  <option value='Nữ'>Nữ</option>
+                  <option value='Nam'>Nam</option>
                 </select>
               </div>
               <div className="flex space-x-4">
@@ -168,7 +217,7 @@ const handleChangeDistrict = (e) => {
                 name="province"
                 className="w-1/2 p-3 border border-gray-300 rounded"
                 onChange={handleChangeProvince}>
-                  <option>Chọn Tỉnh/Tp</option>
+                  <option value=''>Chọn Tỉnh/Tp</option>
                     {provinces.map((province) => (
                       <option key={province.code} value={province.code}>
                         {province.name}
@@ -181,7 +230,7 @@ const handleChangeDistrict = (e) => {
                 onChange={handleChangeDistrict}
                 disabled={!districts.length}
                 >
-                  <option>Chọn Quận/Huyện</option>
+                  <option value=''>Chọn Quận/Huyện</option>
                   {districts.map((district) => (
                   <option key={district.code} value={district.code}>
                     {district.name}
@@ -192,10 +241,10 @@ const handleChangeDistrict = (e) => {
               <select 
               name="ward"
               className="w-full p-3 border border-gray-300 rounded"
-              onChange={handleChange}
+              onChange={handleChangeWard}
               disabled={!wards.length}
               >
-                <option>Chọn Phường/Xã</option>
+                <option value=''>Chọn Phường/Xã</option>
                 {wards.map((ward) => (
                   <option key={ward.code} value={ward.code}>
                       {ward.name}
@@ -234,7 +283,7 @@ const handleChangeDistrict = (e) => {
                 type="text"
                 placeholder="Mời nhập các ký tự trong hình vào ô sau..."
                 className="w-full p-3 border border-gray-300 rounded"
-              />
+              /> 
               <div className="flex items-center justify-start">
                 <img src="" alt="captcha" className="h-12 mr-4" />
               </div>
@@ -248,19 +297,20 @@ const handleChangeDistrict = (e) => {
                 <input type="checkbox" id="newsletter" />
                 <label htmlFor="newsletter">Đăng ký nhận bản tin</label>
               </div>
-              
-            </div>
-          </div>
-        </div>
-        <div className="mt-8 text-center">
+              <div className="mt-8 text-center">
           <button 
           className="w-full md:w-1/3 bg-black text-white py-3 rounded-tl-2xl rounded-br-2xl hover:bg-gray-800"
           onClick={handleSubmit}
+          disabled={isSubmitting}
           >
             ĐĂNG KÝ
           </button>
-          {message && <p>{message}</p>}
+          {message && <p className='text-green-500 text-center mt-4'>{message}</p>}
         </div>
+            </div>
+          </div>
+        </div>
+        
       </div>
     </div>
   );

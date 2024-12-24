@@ -4,14 +4,16 @@ import Footer from "./layout/Footer";
 import { BrowserRouter as Router, useLocation } from 'react-router-dom';
 import AppRoute from "./Route/AppRoute";
 import { CartProvider } from "./context/CartContext";
-
+import { AuthProvider } from "./context/AuthContext";
 function App() {
   
   return (
     <>
       <Router>
         <CartProvider>
-        <AppWithHeaderFooter />
+          <AuthProvider>
+           <AppWithHeaderFooter />
+          </AuthProvider>
         </CartProvider>
       </Router>
     </>

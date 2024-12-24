@@ -1,5 +1,5 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-
+import { createContext, useState, useEffect, useContext } from 'react';
+import PropTypes from "prop-types";
 const CartContext = createContext();
 
 export const useCart = () => {
@@ -24,7 +24,6 @@ export const CartProvider = ({ children }) => {
 // Lưu giỏ hàng vào localStorage khi `cartItems` thay đổi
 useEffect(() => {
   try {
-    console.log("Dữ liệu giỏ hàng trước khi lưu:", cartItems);
       localStorage.setItem("cart", JSON.stringify(cartItems));
   } catch (error) {
       console.error("Lỗi khi lưu giỏ hàng vào localStorage:", error);
@@ -74,3 +73,7 @@ const updateQuantity = (id, sizeWorn, newQuantity) => {
     </CartContext.Provider>
   );
 };
+
+CartProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+}
